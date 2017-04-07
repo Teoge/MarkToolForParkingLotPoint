@@ -321,7 +321,7 @@ else
             theta = linspace(0,2*pi);
             x1 = 10*cos(theta) + handles.marks(i, 1);
             y1 = 10*sin(theta) + handles.marks(i, 2);
-            handles.markPlots = [handles.markPlots; [plot([handles.marks(i, 1)-20,handles.marks(i, 1)+20], [handles.marks(i, 2),handles.marks(i, 2)], 'b'), plot([handles.marks(i, 1),handles.marks(i, 1)], [handles.marks(i, 2)-20,handles.marks(i, 2)+20], 'b'), plot(x1,y1,'r','LineWidth',1), text(handles.marks(i, 1)+10,handles.marks(i, 2)+10,num2str(i),'Color','blue')]];
+            handles.markPlots = [handles.markPlots; [text(handles.marks(i, 1)+10,handles.marks(i, 2)+10,num2str(i),'Color','blue'), plot([handles.marks(i, 1)-20,handles.marks(i, 1)+20], [handles.marks(i, 2),handles.marks(i, 2)], 'b'), plot([handles.marks(i, 1),handles.marks(i, 1)], [handles.marks(i, 2)-20,handles.marks(i, 2)+20], 'b'), plot(x1,y1,'r','LineWidth',1)]];
         end
     else
         handles.marks = [];
@@ -437,7 +437,7 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'w')
         theta = linspace(0,2*pi);
         x = 10*cos(theta) + curX;
         y = 10*sin(theta) + curY;
-        handles.markPlots(end, :) = [plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1), text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue')];
+        handles.markPlots(end, :) = [text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue'), plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1)];
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'a')
     if ~isempty(handles.marks)
@@ -448,7 +448,7 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'a')
         theta = linspace(0,2*pi);
         x = 10*cos(theta) + curX;
         y = 10*sin(theta) + curY;
-        handles.markPlots(end, :) = [plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1), text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue')];
+        handles.markPlots(end, :) = [text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue'), plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1)];
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'s')
     if ~isempty(handles.marks)
@@ -459,7 +459,7 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'s')
         theta = linspace(0,2*pi);
         x = 10*cos(theta) + curX;
         y = 10*sin(theta) + curY;
-        handles.markPlots(end, :) = [plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1), text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue')];
+        handles.markPlots(end, :) = [text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue'), plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1)];
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'d')
     if ~isempty(handles.marks)
@@ -470,7 +470,7 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'d')
         theta = linspace(0,2*pi);
         x = 10*cos(theta) + curX;
         y = 10*sin(theta) + curY;
-        handles.markPlots(end, :) = [plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1), text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue')];
+        handles.markPlots(end, :) = [text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue'), plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1)];
     end
 end
 guidata(hObject, handles);

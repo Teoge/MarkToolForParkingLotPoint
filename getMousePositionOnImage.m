@@ -19,7 +19,7 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
         theta = linspace(0,2*pi);
         x = 10*cos(theta) + curX;
         y = 10*sin(theta) + curY;
-        handles.markPlots = [handles.markPlots; [plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1), text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue')]];
+        handles.markPlots = [handles.markPlots; [text(curX+10,curY+10,num2str(size(handles.marks,1)),'Color','blue'), plot([curX-20,curX+20], [curY,curY], 'b'), plot([curX,curX], [curY-20,curY+20], 'b'), plot(x,y,'r','LineWidth',1)]];
     elseif strcmp(get(handles.figure1,'selectionType'), 'alt')
         for i = 1:size(handles.marks, 1)
             if norm(handles.marks(i, :) - [curX, curY]) < 10
@@ -27,8 +27,8 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
                 delete(handles.markPlots(i, :));
                 handles.markPlots(i, :) = [];
                 for j = i:size(handles.marks, 1)
-                    delete(handles.markPlots(j, 3));
-                    handles.markPlots(j, 3) = text(handles.marks(j, 1)+10,handles.marks(j, 2)+10,num2str(j),'Color','blue');
+                    delete(handles.markPlots(j, 1));
+                    handles.markPlots(j, 1) = text(handles.marks(j, 1)+10,handles.marks(j, 2)+10,num2str(j),'Color','blue');
                 end
                 break;
             end
