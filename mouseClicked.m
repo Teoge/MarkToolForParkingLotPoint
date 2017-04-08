@@ -15,6 +15,7 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
     if strcmp(get(handles.figure1,'selectionType'), 'normal')
         handles.marks = [handles.marks; [curX, curY]];
         handles = plotMarks(handles, size(handles.marks,1));
+        handles.selected = size(handles.marks, 1);
     elseif strcmp(get(handles.figure1,'selectionType'), 'alt')
         for i = 1:size(handles.marks, 1)
             if norm(handles.marks(i, :) - [curX, curY]) < 10
@@ -25,6 +26,13 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
                     delete(handles.markPlots(j, 1));
                     handles.markPlots(j, 1) = text(handles.marks(j, 1)+10, handles.marks(j, 2)+10, ...
                         num2str(j),'Color','blue');
+                end
+                if handles.focusMode
+                    if handles.selected == i
+                        handles.selected = 0;
+                    end
+                elseif handles.selected >= i
+                    handles.selected = handles.selected - 1;
                 end
                 break;
             end

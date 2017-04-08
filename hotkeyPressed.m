@@ -5,30 +5,31 @@ handles = guidata(hObject);
 if ~handles.readSuccess
     return;
 end
-xLimits = get(handles.AxesImage, 'xlim');
-if xLimits(2)-xLimits(1) == 600
-    focusMode = false;
-    step = 1;
-else
-    focusMode = true;
+if handles.focusMode
     step = 0.2;
+else
+    step = 1;
 end
 if strcmp(get(gcf, 'CurrentCharacter'),'f')
     cursorPoint = get(handles.AxesImage, 'CurrentPoint');
     curX = cursorPoint(1,1);
     curY = cursorPoint(1,2);
+    xLimits = get(handles.AxesImage, 'xlim');
     yLimits = get(handles.AxesImage, 'ylim');
-    if ~focusMode && (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+    if ~handles.focusMode && (curX > min(xLimits) && curX < max(xLimits) && ...
+           curY > min(yLimits) && curY < max(yLimits))
         set(handles.AxesImage, 'xlim', [curX-40,curX+40], 'ylim', [curY-40,curY+40]);
+        handles.focusMode = true;
+        handles.selected = 0;
         for i = 1:size(handles.marks, 1)
             if abs(handles.marks(i, 1) - curX) < 40 && abs(handles.marks(i, 2) - curY) < 40
                 handles.selected = i;
                 break;
             end
         end
-        handles.selected = 0;
     else
         set(handles.AxesImage, 'xlim', [0.5,600.5], 'ylim', [0.5,600.5]);
+        handles.focusMode = false;
         handles.selected = size(handles.marks, 1);
     end
     guidata(hObject, handles);

@@ -217,6 +217,7 @@ else
     else
         set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable,'data'))));
     end
+    handles.focusMode = false;
     handles.selected = size(handles.marks, 1);
     set(handles.LoadResult, 'String', 'Load Success!');
     guidata(hObject, handles);
