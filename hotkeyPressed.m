@@ -26,34 +26,35 @@ if strcmp(get(gcf, 'CurrentCharacter'),'f')
                 break;
             end
         end
+        handles.selected = 0;
     else
         set(handles.AxesImage, 'xlim', [0.5,600.5], 'ylim', [0.5,600.5]);
         handles.selected = size(handles.marks, 1);
     end
     guidata(hObject, handles);
 elseif strcmp(get(gcf, 'CurrentCharacter'),'w')
-    if ~isempty(handles.marks)
+    if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) - step;
         delete(handles.markPlots(handles.selected, :));
         handles = plotMarks(handles, handles.selected);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'a')
-    if ~isempty(handles.marks)
+    if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) - step;
         delete(handles.markPlots(handles.selected, :));
         handles = plotMarks(handles, handles.selected);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'s')
-    if ~isempty(handles.marks)
+    if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) + step;
         delete(handles.markPlots(handles.selected, :));
         handles = plotMarks(handles, handles.selected);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'d')
-    if ~isempty(handles.marks)
+    if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) + step;
         delete(handles.markPlots(handles.selected, :));
         handles = plotMarks(handles, handles.selected);
