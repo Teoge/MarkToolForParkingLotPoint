@@ -36,29 +36,37 @@ if strcmp(get(gcf, 'CurrentCharacter'),'f')
 elseif strcmp(get(gcf, 'CurrentCharacter'),'w')
     if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) - step;
-        delete(handles.markPlots(handles.selected, :));
-        handles = plotMarks(handles, handles.selected);
+        if all(ishandle(handles.markPlots(handles.selected, :)))
+            delete(handles.markPlots(handles.selected, :));
+            handles = plotMarks(handles, handles.selected);
+        end
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'a')
     if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) - step;
-        delete(handles.markPlots(handles.selected, :));
-        handles = plotMarks(handles, handles.selected);
+        if all(ishandle(handles.markPlots(handles.selected, :)))
+            delete(handles.markPlots(handles.selected, :));
+            handles = plotMarks(handles, handles.selected);
+        end
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'s')
     if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) + step;
-        delete(handles.markPlots(handles.selected, :));
-        handles = plotMarks(handles, handles.selected);
+        if all(ishandle(handles.markPlots(handles.selected, :)))
+            delete(handles.markPlots(handles.selected, :));
+            handles = plotMarks(handles, handles.selected);
+        end
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'d')
     if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) + step;
-        delete(handles.markPlots(handles.selected, :));
-        handles = plotMarks(handles, handles.selected);
+        if all(ishandle(handles.markPlots(handles.selected, :)))
+            delete(handles.markPlots(handles.selected, :));
+            handles = plotMarks(handles, handles.selected);
+        end
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'e')

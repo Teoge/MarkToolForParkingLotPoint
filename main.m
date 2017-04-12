@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 08-Apr-2017 20:04:21
+% Last Modified by GUIDE v2.5 10-Apr-2017 22:21:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,7 +57,7 @@ handles.output = hObject;
 
 handles.readSuccess = 0;
 set(gcf, 'WindowButtonDownFcn', @mouseClicked);
-set(gcf, 'WindowKeyReleaseFcn', @hotkeyPressed);
+set(gcf, 'WindowKeyPressFcn', @hotkeyPressed);
 set(gcf, 'WindowScrollWheelFcn', @scrollWhellFunction);
 set(gcf, 'WindowButtonMotionFcn', @updateCursor);
 
@@ -176,7 +176,7 @@ function ChooseFolder_Callback(~, ~, handles)
 % hObject    handle to ChooseFolder (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-dname = uigetdir();
+dname = uigetdir(get(handles.FolderPath, 'String'));
 if dname ~= 0
     set(handles.FolderPath, 'String', dname);
 end
@@ -257,4 +257,12 @@ elseif eventdata.VerticalScrollCount < 0
 end
 
 
-function updateCursor(~, ~)
+function updateCursor(hObject, ~)
+handles = guidata(hObject);
+if ~handles.readSuccess
+    return;
+end
+cursorPoint = get(handles.AxesImage, 'CurrentPoint');
+curX = cursorPoint(1,1);
+curY = cursorPoint(1,2);
+set(handles.CurrentPoint, 'String', ['(',num2str(curX,'%.2f'),',',num2str(curY,'%.2f'),')']);

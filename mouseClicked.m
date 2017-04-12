@@ -12,11 +12,11 @@ xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
 
 if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
-    if strcmp(get(handles.figure1,'selectionType'), 'normal')
+    if strcmp(get(gcf,'selectionType'), 'normal')
         handles.marks = [handles.marks; [curX, curY]];
         handles = plotMarks(handles, size(handles.marks,1));
         handles.selected = size(handles.marks, 1);
-    elseif strcmp(get(handles.figure1,'selectionType'), 'alt')
+    elseif strcmp(get(gcf,'selectionType'), 'alt')
         for i = 1:size(handles.marks, 1)
             if norm(handles.marks(i, :) - [curX, curY]) < 10
                 handles.marks(i, :) = [];
@@ -31,7 +31,7 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
                     if handles.selected == i
                         handles.selected = 0;
                     end
-                elseif handles.selected >= i
+                else
                     handles.selected = handles.selected - 1;
                 end
                 break;
