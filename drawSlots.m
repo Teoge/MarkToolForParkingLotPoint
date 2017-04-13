@@ -10,11 +10,11 @@ for i = 1:size(slots,1)
     y1 = marks(slots(i,1),2);
     x2 = marks(slots(i,2),1);
     y2 = marks(slots(i,2),2);
-    distance = (x1-x2)^2 + (y1-y2)^2;
-    if distance>125.88^2&&distance<197.5^2%slotType = 1;
-        sideLength = 280;
-    elseif distance>279.36^2&&distance<397^2%slotType = 2;
-        sideLength = 135;
+    distance = sqrt((x1-x2)^2 + (y1-y2)^2); %distance = (x1-x2)^2 + (y1-y2)^2;
+    if distance>100&&distance<200%slotType = 1; distance>125.88^2&&distance<197.5^2
+        sideLength = 280;%280
+    elseif distance>210&&distance<400%slotType = 2; distance>279.36^2&&distance<397^2
+        sideLength = 120;%135
     else
         set(handles.TableInfo, 'String', 'Invalid Slot in Table');
         continue;
