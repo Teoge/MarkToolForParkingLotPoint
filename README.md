@@ -27,9 +27,9 @@ After you have marked your marks, fill the table on the right to mark parking sl
 1. Find a parking slots in the image with two parking lot points you have marked.
 2. Fill the index numbers of two points in the first and second column in a row.
 3. Fill the type number of the parking slots according to the type of parking slots and the sequence you fill two points.
-4. Click "Save" button or "E" on the keyboard to save the parking slots to file. The slots should be drawn on the image.
+4. Click "Save" button or "E" on the keyboard to save the parking slots to file and the slots should be drawn on the image.
 
-There are three types of parking slots, which is defined in the parking slot detection project. Type 1 refer to the right-angle parking slots. Type 2 and 3 refer to slanted parking slots in different direction.
+Parking slots are divided into three types, which is defined in the parking slot detection project. Type 1 refer to the right-angle parking slots. Type 2 and 3 refer to slanted parking slots in different direction.
 
 The following images show three types of parking slot. For each image, the parking lot point on the left hand side should be the first point you enter in the table. The parking lot point on the right hand side should be the second point you enter in the image.
 
