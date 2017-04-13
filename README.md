@@ -30,6 +30,7 @@ After you have marked your marks, fill the table on the right to mark parking sl
 4. Click "Save" button or "E" on the keyboard to save the parking slots to file. The slots should be drawn on the image.
 
 There are three types of parking slots, which is defined in the parking slot detection project. Type 1 refer to the right-angle parking slots. Type 2 and 3 refer to slanted parking slots in different direction.
+|  ![ParkingSlotType1](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType1.bmp) |  ![ParkingSlotType2](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType2.bmp) |  ![ParkingSlotType3](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType3.bmp) |
 
 #### Advanced Functionality
 1. Press "F" key on the keyboard to magnify to a nearby region of mouse position.
