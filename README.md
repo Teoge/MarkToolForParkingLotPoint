@@ -31,6 +31,7 @@ After you have marked your marks, fill the table on the right to mark parking sl
 
 There are three types of parking slots, which is defined in the parking slot detection project. Type 1 refer to the right-angle parking slots. Type 2 and 3 refer to slanted parking slots in different direction.
 The following images show three types of parking slot. For each image, the parking lot point on the left hand side should be the first point you enter in the table. The parking lot point on the right hand side should be the second point you enter in the image.
+
 | ![ParkingSlotType1](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType1.bmp) | ![ParkingSlotType2](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType2.bmp) | ![ParkingSlotType3](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType3.bmp) |
 | :--------------: |:----------------:| :---------------:|
 | ParkingSlotType1 | ParkingSlotType2 | ParkingSlotType3 |
