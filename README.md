@@ -2,7 +2,7 @@
 This is MATLAB GUI tool for marking parking lot point or something like that. The latest version can be found at here: https://github.com/Teoge/MarkToolForParkingLotPoint
 
 ### Requirement
-MATLAB (In windows, please set your display to 100% to fully display the GUI.)
+MATLAB (In windows, please set your display setting to 100% to fully display the GUI.)
 
 ### How to use:
 #### 1. Read Image
