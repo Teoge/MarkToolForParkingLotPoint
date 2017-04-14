@@ -36,37 +36,25 @@ if strcmp(get(gcf, 'CurrentCharacter'),'f')
 elseif strcmp(get(gcf, 'CurrentCharacter'),'w')
     if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) - step;
-        if all(ishandle(handles.markPlots(handles.selected, :)))
-            delete(handles.markPlots(handles.selected, :));
-            handles = plotMarks(handles, handles.selected);
-        end
+        handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'a')
     if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) - step;
-        if all(ishandle(handles.markPlots(handles.selected, :)))
-            delete(handles.markPlots(handles.selected, :));
-            handles = plotMarks(handles, handles.selected);
-        end
+        handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'s')
     if handles.selected ~= 0
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) + step;
-        if all(ishandle(handles.markPlots(handles.selected, :)))
-            delete(handles.markPlots(handles.selected, :));
-            handles = plotMarks(handles, handles.selected);
-        end
+        handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'d')
     if handles.selected ~= 0
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) + step;
-        if all(ishandle(handles.markPlots(handles.selected, :)))
-            delete(handles.markPlots(handles.selected, :));
-            handles = plotMarks(handles, handles.selected);
-        end
+        handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'e')
@@ -78,3 +66,18 @@ elseif double(get(gcf, 'CurrentCharacter'))==28
 end
 end
 
+function handles = fineTuneReplot(handles)
+if all(ishandle(handles.markPlots(handles.selected, :)))
+    delete(handles.markPlots(handles.selected, :));
+    handles = plotMarks(handles, handles.selected);
+    SlotTable = get(handles.SlotTable,'data');
+    SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
+    SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
+    SlotTable = cell2mat(SlotTable);
+    if ~isempty(handles.markLines)
+        delete(handles.markLines(:));
+        handles.markLines(:) = [];
+    end
+    handles = drawSlots(handles, SlotTable, handles.marks);
+end
+end
