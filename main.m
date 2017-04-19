@@ -57,6 +57,7 @@ handles.output = hObject;
 
 handles.readSuccess = 0;
 set(gcf, 'WindowButtonDownFcn', @mouseClicked);
+set(gcf, 'WindowButtonUpFcn', @mouseReleased);
 set(gcf, 'WindowKeyPressFcn', @hotkeyPressed);
 set(gcf, 'WindowScrollWheelFcn', @scrollWhellFunction);
 set(gcf, 'WindowButtonMotionFcn', @updateCursor);
@@ -182,6 +183,25 @@ if dname ~= 0
 end
 
 
+% --- Executes on button press in TurnToPage.
+function TurnToPage_Callback(hObject, ~, handles)
+% hObject    handle to TurnToPage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~handles.readSuccess
+    set(handles.LoadResult, 'String', 'Select folder first!');
+    return;
+end
+page = str2double(get(handles.PageToTurn, 'String'));
+page = page(1);
+if page == fix(page) && page > 0 && page <= size(handles.images, 1)
+    handles.imageIndex = page;
+    loadImageAndMarks(hObject, handles);
+else
+    set(handles.LoadResult, 'String', 'Invaid Index!');
+end
+
+
 function loadImageAndMarks(hObject, handles)
 name = [handles.imagePath, handles.images(handles.imageIndex).name];
 if ~exist(name, 'file')
@@ -218,28 +238,11 @@ else
         set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable,'data'))));
     end
     handles.focusMode = false;
-    handles.selected = size(handles.marks, 1);
+    handles.selected = 0;
+    set(handles.SelectedMark, 'String', '0');
+    handles.moving = 0;
     set(handles.LoadResult, 'String', 'Load Success!');
     guidata(hObject, handles);
-end
-
-
-% --- Executes on button press in TurnToPage.
-function TurnToPage_Callback(hObject, ~, handles)
-% hObject    handle to TurnToPage (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if ~handles.readSuccess
-    set(handles.LoadResult, 'String', 'Select folder first!');
-    return;
-end
-page = str2double(get(handles.PageToTurn, 'String'));
-page = page(1);
-if page == fix(page) && page > 0 && page <= size(handles.images, 1)
-    handles.imageIndex = page;
-    loadImageAndMarks(hObject, handles);
-else
-    set(handles.LoadResult, 'String', 'Invaid Index!');
 end
 
 
@@ -266,3 +269,33 @@ cursorPoint = get(handles.AxesImage, 'CurrentPoint');
 curX = cursorPoint(1,1);
 curY = cursorPoint(1,2);
 set(handles.CurrentPoint, 'String', ['(',num2str(curX,'%.2f'),',',num2str(curY,'%.2f'),')']);
+xLimits = get(handles.AxesImage, 'xlim');
+yLimits = get(handles.AxesImage, 'ylim');
+if handles.moving ~= 0 && (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+    handles.marks(handles.moving, :) = [curX, curY] + handles.movingOffset;
+    if all(ishandle(handles.markPlots(handles.moving, :)))
+        delete(handles.markPlots(handles.moving, :));
+        handles = plotMarks(handles, handles.moving);
+        SlotTable = get(handles.SlotTable,'data');
+        SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
+        SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
+        SlotTable = cell2mat(SlotTable);
+        if ~isempty(handles.markLines)
+            delete(handles.markLines(:));
+            handles.markLines(:) = [];
+        end
+        handles = drawSlots(handles, SlotTable, handles.marks);
+    end
+    guidata(hObject, handles);
+end
+
+
+function mouseReleased(hObject, ~)
+handles = guidata(hObject);
+if ~handles.readSuccess
+    return;
+end
+if strcmp(get(gcf,'selectionType'), 'normal') && handles.moving ~= 0
+    handles.moving = 0;
+    guidata(hObject, handles);
+end

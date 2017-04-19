@@ -13,9 +13,25 @@ yLimits = get(handles.AxesImage, 'ylim');
 
 if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
     if strcmp(get(gcf,'selectionType'), 'normal')
-        handles.marks = [handles.marks; [curX, curY]];
-        handles = plotMarks(handles, size(handles.marks,1));
-        handles.selected = size(handles.marks, 1);
+        actionCreate = true;
+        for i = 1:size(handles.marks, 1)
+            if norm(handles.marks(i, :) - [curX, curY]) < 10
+                actionCreate = false;
+                handles.moving = i;
+                handles.selected = handles.moving;
+                set(handles.SelectedMark, 'String', num2str(handles.selected));
+                handles.movingOffset = handles.marks(i, :) - [curX, curY];
+                break;
+            end
+        end
+        if actionCreate
+            handles.marks = [handles.marks; [curX, curY]];
+            handles = plotMarks(handles, size(handles.marks,1));
+            handles.moving = size(handles.marks,1);
+            handles.selected = handles.moving;
+            set(handles.SelectedMark, 'String', num2str(handles.selected));
+            handles.movingOffset = [0, 0];
+        end
     elseif strcmp(get(gcf,'selectionType'), 'alt')
         for i = 1:size(handles.marks, 1)
             if norm(handles.marks(i, :) - [curX, curY]) < 10
@@ -27,15 +43,29 @@ if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < 
                     handles.markPlots(j, 1) = text(handles.marks(j, 1)+10, handles.marks(j, 2)+10, ...
                         num2str(j),'Color','blue');
                 end
-                if handles.focusMode
-                    if handles.selected == i
-                        handles.selected = 0;
-                    end
-                else
+                if handles.selected == i
+                    handles.selected = 0;
+                elseif handles.selected > i
                     handles.selected = handles.selected - 1;
                 end
+                set(handles.SelectedMark, 'String', num2str(handles.selected));
                 break;
             end
+        end
+    elseif strcmp(get(gcf,'selectionType'), 'extend')
+        if handles.moving ~= 0
+            i = handles.moving;
+            handles.moving = 0;
+            handles.marks(i, :) = [];
+            delete(handles.markPlots(i, :));
+            handles.markPlots(i, :) = [];
+            for j = i:size(handles.marks, 1)
+                delete(handles.markPlots(j, 1));
+                handles.markPlots(j, 1) = text(handles.marks(j, 1)+10, handles.marks(j, 2)+10, ...
+                    num2str(j),'Color','blue');
+            end
+            handles.selected = 0;
+            set(handles.SelectedMark, 'String', '0');
         end
     end
     guidata(hObject, handles);

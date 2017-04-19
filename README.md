@@ -10,7 +10,7 @@ After you have downloaded the source code, unzip it in a folder.
 1. Start up MATLAB and run main.m.
 2. Enter the folder your images in, or use "Choose Folder" button to select folder.
 3. Select correct format of your images, and click "Read" button.
-4. Click "Previous" and "Next" button, or left arrow key and right arrow key to navigate through the images.
+4. Use "Previous" and "Next" button, or left arrow key and right arrow key to navigate through the images.
 
 The program will read images of corresponding format in a sequence and the total number of images will be shown below the button. The first image will be loaded automatically to the axes. The sequence and name of it will be shown below the axes.
 
@@ -34,10 +34,12 @@ Parking slots are divided into three types, which is defined in the parking slot
 The following images show three types of parking slot. For each image, the parking lot point on the left hand side should be the first point you enter in the table. The parking lot point on the right hand side should be the second point you enter in the image.
 
 | ![ParkingSlotType1](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType1.bmp) | ![ParkingSlotType2](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType2.bmp) | ![ParkingSlotType3](https://raw.githubusercontent.com/Teoge/MarkToolForParkingLotPoint/master/images/ParkingSlotType3.bmp) |
-| :--------------: |:----------------:| :---------------:|
+| :--------------: | :--------------: | :--------------: |
 | ParkingSlotType1 | ParkingSlotType2 | ParkingSlotType3 |
 
 #### Advanced Functionality
 1. Press "F" key on the keyboard to magnify to a nearby region of mouse position.
-2. Press "W", "A", "S" and "D" keys on the keyboard to fine tune the position of certain mark. By default, it is the last mark your have marked, namely the mark with largest index number. But when you magnify the image, the mark you fine tune will be the mark in the view with smallest index number.
-3. Use mouse wheel up and down to perform "Save" + "Previous" button function and "Save" + "Next" button function.
+2. Click left mouse button and drag a mark to adjust its position.
+3. Press "W", "A", "S" and "D" keys on the keyboard to fine tune the position of the selected mark. The index of selected mark will be shown on the right of image. By default, none of the marks is selected, and the index should be zero. When you click on a mark or drag it, the mark will be selected. When you magnify the image, the mark in the view with smallest index number will be selected.
+4. Use mouse wheel up and down to perform "Save" + "Previous" button function and "Save" + "Next" button function.
+5. Use "Turn to Page" function to fast index to certain page.
