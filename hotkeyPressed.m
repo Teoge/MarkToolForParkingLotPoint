@@ -1,5 +1,5 @@
 function hotkeyPressed( hObject, eventdata )
-%UNTITLED Summary of this function goes here
+%HOTKEYPRESSED Respond the keyboard press event
 %   Detailed explanation goes here
 handles = guidata(hObject);
 if ~handles.readSuccess
@@ -31,30 +31,31 @@ if strcmp(get(gcf, 'CurrentCharacter'),'f')
             set(handles.SelectedMark, 'String', num2str(handles.selected));
         end
     else
-        set(handles.AxesImage, 'xlim', [0.5,600.5], 'ylim', [0.5,600.5]);
+        set(handles.AxesImage, 'xlim', [0.5, handles.imageWidth + 0.5], ...
+            'ylim', [0.5, handles.imageHeight + 0.5]);
         handles.focusMode = false;
     end
     guidata(hObject, handles);
 elseif strcmp(get(gcf, 'CurrentCharacter'),'w') && handles.moving == 0
-    if handles.selected ~= 0
+    if handles.selected ~= 0 && handles.marks(handles.selected, 2) - step > 0.5
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) - step;
         handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'a') && handles.moving == 0
-    if handles.selected ~= 0
+    if handles.selected ~= 0 && handles.marks(handles.selected, 1) - step > 0.5
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) - step;
         handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'s') && handles.moving == 0
-    if handles.selected ~= 0
+    if handles.selected ~= 0 && handles.marks(handles.selected, 2) + step < handles.imageWidth + 0.5
         handles.marks(handles.selected, 2) = handles.marks(handles.selected, 2) + step;
         handles = fineTuneReplot(handles);
         guidata(hObject, handles);
     end
 elseif strcmp(get(gcf, 'CurrentCharacter'),'d') && handles.moving == 0
-    if handles.selected ~= 0
+    if handles.selected ~= 0 && handles.marks(handles.selected, 1) + step < handles.imageHeight + 0.5
         handles.marks(handles.selected, 1) = handles.marks(handles.selected, 1) + step;
         handles = fineTuneReplot(handles);
         guidata(hObject, handles);

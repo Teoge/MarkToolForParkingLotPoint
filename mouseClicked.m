@@ -11,7 +11,8 @@ curY = cursorPoint(1,2);
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
 
-if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+        && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
     if strcmp(get(gcf,'selectionType'), 'normal')
         actionCreate = true;
         for i = 1:size(handles.marks, 1)

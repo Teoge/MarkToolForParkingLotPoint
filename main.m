@@ -208,7 +208,9 @@ if ~exist(name, 'file')
     set(handles.LoadResult, 'String', 'The image does not exist');
 else
     hold off;
-    imshow(name);
+    image = imread(name);
+    imshow(image);
+    [handles.imageWidth, handles.imageHeight, ~] = size(image);
     hold on;
     set(handles.ImageFileName, 'String', ...
         ['No.', num2str(handles.imageIndex),': ', handles.images(handles.imageIndex).name]);
@@ -271,7 +273,8 @@ curY = cursorPoint(1,2);
 set(handles.CurrentPoint, 'String', ['(',num2str(curX,'%.2f'),',',num2str(curY,'%.2f'),')']);
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
-if handles.moving ~= 0 && (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+if handles.moving ~= 0 && curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+        && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
     handles.marks(handles.moving, :) = [curX, curY] + handles.movingOffset;
     if all(ishandle(handles.markPlots(handles.moving, :)))
         delete(handles.markPlots(handles.moving, :));
