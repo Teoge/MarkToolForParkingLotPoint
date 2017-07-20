@@ -33,18 +33,19 @@ for i = 1:size(slots,1)
         continue;
     end
     %radian = 1.16937 angle = 67
+    angle = slots(i,4);
     switch slots(i, 3)
         case 1
             vec = [x2-x1, y2-y1]*[0, -1; 1, 0];
             vec = vec / norm(vec);
         case 2
-            vec = [x2-x1, y2-y1]*[0.3907, -0.9205; 0.9205, 0.3907];
+            vec = [x2-x1, y2-y1]*[cos(deg2rad(angle)), -sin(deg2rad(angle)); sin(deg2rad(angle)), cos(deg2rad(angle))];
             vec = vec / norm(vec);
-            sideLength = sideLength / 0.9205;
+            sideLength = sideLength / sin(deg2rad(angle));
         case 3
-            vec = [x2-x1, y2-y1]*[-0.3907, -0.9205; 0.9205, -0.3907];
+            vec = [x2-x1, y2-y1]*[-cos(deg2rad(angle)), -sin(deg2rad(angle)); sin(deg2rad(angle)), cos(deg2rad(angle))];
             vec = vec / norm(vec);
-            sideLength = sideLength / 0.9205;
+            sideLength = sideLength / sin(deg2rad(angle));
         otherwise
             set(handles.TableInfo, 'String', 'Invalid Slot Type in Table');
             continue;
