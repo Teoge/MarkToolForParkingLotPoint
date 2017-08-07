@@ -231,6 +231,7 @@ else
         slotsCell = num2cell(data.slots);
         slotsCell{16,5} = [];
         %slotsCell(:,3) = {1};
+        %slotsCell(:,4) = {90};
     	set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
         handles = drawSlots(handles, data.slots, handles.marks);
         for i = 1:size(handles.marks, 1)

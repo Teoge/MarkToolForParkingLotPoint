@@ -3,6 +3,7 @@ This is MATLAB GUI tool for marking parking lot point or something like that. Th
 
 ### Requirement
 MATLAB (In windows, please set your display setting to 100% to fully display the GUI.)
+For small screen in notebook, use the fig file in folder "SmallScreenUI" instead.
 
 ### How to use:
 #### 1. Read Image
