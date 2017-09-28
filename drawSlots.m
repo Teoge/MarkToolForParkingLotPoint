@@ -24,36 +24,50 @@ for i = 1:size(slots,1)
     x2 = marks(slots(i,2),1);
     y2 = marks(slots(i,2),2);
     distance = sqrt((x1-x2)^2 + (y1-y2)^2);
-    if distance > VerticalSlotMin && distance < VerticalSlotMax
-        sideLength = 280;
-    elseif distance > HorizentalSlotMin && distance < HorizentalSlotMax
-        sideLength = 120;
-    else
+
+    if distance < VerticalSlotMin || distance > HorizentalSlotMax
         set(handles.TableInfo, 'String', 'Invalid Slot in Table');
         continue;
     end
     %radian = 1.16937 angle = 67
     switch slots(i, 3)
         case 1
+            if slots(i, 4) ~= 90
+                set(handles.TableInfo, 'String', 'Invalid Slot in Table');
+                continue;
+            end
+            if distance < (VerticalSlotMax + HorizentalSlotMin) / 2
+                sideLength = 280;
+            else
+                sideLength = 120;
+            end
             vec = [x2-x1, y2-y1]*[0, -1; 1, 0];
             vec = vec / norm(vec);
         case 2
-            angle = slots(i, 4);
-            vec = [x2-x1, y2-y1]*[cos(deg2rad(angle)), -sin(deg2rad(angle)); sin(deg2rad(angle)), cos(deg2rad(angle))];
+            if slots(i, 4) <= 0 || slots(i, 4) >= 90
+                set(handles.TableInfo, 'String', 'Invalid Slot in Table');
+                continue;
+            end
+            rad = deg2rad(slots(i, 4));
+            vec = [x2-x1, y2-y1]*[cos(rad), -sin(rad); sin(rad), cos(rad)];
             vec = vec / norm(vec);
-            sideLength = sideLength / sin(deg2rad(angle));
+            sideLength = 280 / sin(rad);
         case 3
-            angle = slots(i, 4);
-            vec = [x2-x1, y2-y1]*[-cos(deg2rad(angle)), -sin(deg2rad(angle)); sin(deg2rad(angle)), cos(deg2rad(angle))];
+            if slots(i, 4) <= 0 || slots(i, 4) >= 90
+                set(handles.TableInfo, 'String', 'Invalid Slot in Table');
+                continue;
+            end
+            rad = deg2rad(slots(i, 4));
+            vec = [x2-x1, y2-y1]*[-cos(rad), -sin(rad); sin(rad), -cos(rad)];
             vec = vec / norm(vec);
-            sideLength = sideLength / sin(deg2rad(angle));
+            sideLength = 280 / sin(rad);
         otherwise
             set(handles.TableInfo, 'String', 'Invalid Slot Type in Table');
             continue;
     end
     handles.markLines = [handles.markLines;...
         plot([x1+vec(1)*sideLength, x1, x2, x2+vec(1)*sideLength], ...
-        [y1+vec(2)*sideLength,y1,y2,y2+vec(2)*sideLength], 'k', 'LineWidth', 1)];
+        [y1+vec(2)*sideLength, y1, y2, y2+vec(2)*sideLength], 'k', 'LineWidth', 1)];
     set(handles.TableInfo, 'String', '');
 end
 
