@@ -210,7 +210,7 @@ else
     hold off;
     image = imread(name);
     imshow(image);
-    [handles.imageWidth, handles.imageHeight, ~] = size(image);
+    [handles.imageHeight, handles.imageWidth, ~] = size(image);
     hold on;
     set(handles.ImageFileName, 'String', ...
         ['No.', num2str(handles.imageIndex),': ', handles.images(handles.imageIndex).name]);
