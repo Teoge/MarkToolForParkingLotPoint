@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 10-Apr-2017 22:21:55
+% Last Modified by GUIDE v2.5 23-Jul-2018 16:10:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -96,7 +96,7 @@ if isempty(dirs)
     set(handles.ReadResult, 'String', 'There is no image under this path!');
     return;
 end
-set(handles.ReadResult, 'String', [num2str(size(dirs, 1)), ' images read!']);
+set(handles.ReadResult, 'String', [num2str(size(dirs, 1)), ' images found!']);
 handles.readSuccess = 1;
 handles.imagePath = [path, '\'];
 handles.images = dirs;
@@ -232,7 +232,7 @@ else
         slotsCell{16,5} = [];
         %slotsCell(:,3) = {1};
         %slotsCell(:,4) = {90};
-    	set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
+        set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
         handles = drawSlots(handles, data.slots, handles.marks);
         for i = 1:size(handles.marks, 1)
             handles = plotMarks(handles, i);
@@ -302,4 +302,36 @@ end
 if strcmp(get(gcf,'selectionType'), 'normal') && handles.moving ~= 0
     handles.moving = 0;
     guidata(hObject, handles);
+end
+
+
+% --- Executes on button press in ShowSlots.
+function ShowSlots_Callback(hObject, eventdata, handles)
+% hObject    handle to ShowSlots (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ShowSlots
+
+
+% --- Executes on selection change in PointType.
+function PointType_Callback(hObject, eventdata, handles)
+% hObject    handle to PointType (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns PointType contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from PointType
+
+
+% --- Executes during object creation, after setting all properties.
+function PointType_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PointType (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

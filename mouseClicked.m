@@ -54,6 +54,8 @@ if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < m
             end
         end
     elseif strcmp(get(gcf,'selectionType'), 'extend')
+        % When moving a marking point, click mouse right button to delete
+        % the marking point.
         if handles.moving ~= 0
             i = handles.moving;
             handles.moving = 0;
