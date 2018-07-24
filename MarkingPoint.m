@@ -31,7 +31,6 @@ classdef MarkingPoint < handle
             this.endX = vector(3);
             this.endY = vector(4);
             this.type = vector(5);
-            this.PlotMarkingPoint();
         end
         
         function PlotMarkingPoint(this)
