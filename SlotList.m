@@ -1,9 +1,10 @@
-classdef SlotPlotter < handle
-    %SLOTPLOTTER Summary of this class goes here
+classdef SlotList < handle
+    %SLOTLIST Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         slots = []
+        mkpoints = []
         slotPlots = []
     end
     
@@ -99,4 +100,6 @@ classdef SlotPlotter < handle
     end
     
 end
+
+
 

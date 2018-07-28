@@ -214,15 +214,13 @@ else
     hold on;
     set(handles.ImageFileName, 'String', ...
         ['No.', num2str(handles.imageIndex),': ', handles.images(handles.imageIndex).name]);
-    handles.marks = [];
-    handles.markPlots = [];
-    handles.markLines = [];
+    handles.markingPoints = [];
     name(end - 2 : end) = 'mat';
     if exist(name, 'file')
         data = load(name);
         if isfield(data,'marks')
-            if ~isempty(data.marks)
-                handles.marks = data.marks(:,1:2);
+            for i = 1:size(data.marks, 1)
+                handles.markingPoints = [handles.markingPoints; MarkingPoint(data.marks(i, :))];
             end
         end
         if ~isfield(data,'slots')
@@ -233,10 +231,8 @@ else
         %slotsCell(:,3) = {1};
         %slotsCell(:,4) = {90};
         set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
-        handles = drawSlots(handles, data.slots, handles.marks);
-        for i = 1:size(handles.marks, 1)
-            handles = plotMarks(handles, i);
-        end
+        handles.slotPlotter = SlotPlotter(slotsCell(1:15,1:4));
+        handles.slotPlotter.plotSlots(handles.markingPoints, handles.imageHeight);
     else
         set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable,'data'))));
     end

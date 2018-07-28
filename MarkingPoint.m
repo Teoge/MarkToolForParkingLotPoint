@@ -3,94 +3,100 @@ classdef MarkingPoint < handle
     %   Detailed explanation goes here
     
     properties
-        startX = 0
-        startY = 0
-        endX = 0
-        endY = 0
+        src
+        dest
         type = 0  % 0 represents T and 1 represents L
         % plot properties
-        label
-        dot
-        circleStart
-        circleEnd
         separator
         bridge
-        % constant
-        radius = 10
+        label
     end
     
     methods
-        function this = MarkingPoint(vector)
-            vector = vector(:);
-            if length(vector) < 5
-                vector = [vector; zeros(5 - length(vector), 1)];
+        function this = MarkingPoint(varargin)
+            assert(nargin == 1 || nargin == 3)
+            if nargin == 1
+                vector = varargin{1}(:);
+                assert(length(vector) == 5);
+                this.src = Point(vector(1), vector(2));
+                this.dest = Point(vector(3), vector(4));
+                this.type = vector(5);
+            else
+                this.src = varargin{1};
+                this.dest = varargin{2};
+                this.type = varargin{3};
             end
-            assert(vector(5)==0 || vector(5)==1);
-            this.startX = vector(1);
-            this.startY = vector(2);
-            this.endX = vector(3);
-            this.endY = vector(4);
-            this.type = vector(5);
+            assert(this.type==0 || this.type==1);
+            this.Plot();
         end
         
-        function PlotMarkingPoint(this)
-            this.label = text(this.startX + this.radius, this.startY + this.radius, num2str(index), 'Color', 'blue');
-            
-            this.separator = quiver(this.startX, this.startY, this.endX, this.endY, 1, 'm' , 'LineWidth', 1);
-            
-            vec = [this.endX - this.startX, this.endY - this.startY];
-            vec = vec / norm(vec) * this.radius;
-            if this.type == 0
-                X = [this.startX - vec(2), this.startX + vec(2)];
-                Y = [this.startY + vec(1), this.startY - vec(1)];
-            elseif this.type == 1
-                X = [this.startX - vec(2), this.startX];
-                Y = [this.startY + vec(1), this.startY];
-            end
-            this.bridge = plot(X, Y, 'm', 'LineWidth', 1);
-            
-            this.dot = plot(this.startX, this.startY, 'b.', 'MarkerSize', 5);
-            
-            theta = linspace(0,2*pi);
-            x = this.radius*cos(theta) + this.startX;
-            y = this.radius*sin(theta) + this.startY;
-            this.circleStart = plot(x, y, 'r', 'LineWidth', 1);
-            
-            theta = linspace(0,2*pi);
-            x = this.radius*cos(theta) + this.endX;
-            y = this.radius*sin(theta) + this.endY;
-            this.circleStart = plot(x, y, 'r', 'LineWidth', 1);
-        end
-        
-        function RePlot(this)
-            delete(this.label);
-            delete(this.dot);
-            delete(this.circleStart);
-            delete(this.circleEnd);
+        function delete(this)
+            delete(this.src);
+            delete(this.dest);
             delete(this.separator);
             delete(this.bridge);
-            this.PlotMarkingPoint();
+            delete(this.label);
         end
         
-        function SetStartPoint(this, x, y)
-            this.startX = x;
-            this.startY = y;
-            this.Replot();
+        function Plot(this)
+            vec = [this.dest.x - this.src.x, this.dest.y - this.src.y];
+            this.separator = quiver(this.src.x, this.src.y, vec(1), vec(2), 1, 'm', 'LineWidth', 1);
+            vec = vec / norm(vec) * this.src.radius;
+            if this.type == 0
+                X = [this.src.x - vec(2), this.src.x + vec(2)];
+                Y = [this.src.y + vec(1), this.src.y - vec(1)];
+            elseif this.type == 1
+                X = [this.src.x - vec(2), this.src.x];
+                Y = [this.src.y + vec(1), this.src.y];
+            end
+            this.bridge = plot(X, Y, 'm', 'LineWidth', 1);
+            this.label = text(this.src.x+this.src.radius, this.src.y+this.src.radius, '', 'Color', 'blue');
         end
         
-        function SetEndPoint(this, x, y)
-            this.endX = x;
-            this.endY = y;
-            this.Replot();
+        function UpdatePlot(this)
+            vec = [this.dest.x - this.src.x, this.dest.y - this.src.y];
+            this.separator.XData = this.src.x;
+            this.separator.YData = this.src.y;
+            this.separator.UData = vec(1);
+            this.separator.VData = vec(2);
+            vec = vec / norm(vec) * this.src.radius;
+            if this.type == 0
+                X = [this.src.x - vec(2), this.src.x + vec(2)];
+                Y = [this.src.y + vec(1), this.src.y - vec(1)];
+            elseif this.type == 1
+                X = [this.src.x - vec(2), this.src.x];
+                Y = [this.src.y + vec(1), this.src.y];
+            end
+            this.bridge.XData = X;
+            this.bridge.YData = Y;
+            this.label.Position(1) = this.src.x;
+            this.label.Position(2) = this.src.y;
+        end
+        
+        function SetSrc(this, x, y)
+            this.src.Set(x, y);
+            this.UpdatePlot();
+        end
+        
+        function SetDest(this, x, y)
+            this.dest.Set(x, y);
+            this.UpdatePlot();
         end
         
         function SetType(this, type)
             assert(type==0 || type==1);
-            this.type = type;
+            if this.type ~= type
+                this.type = type;
+                this.UpdatePlot();
+            end
+        end
+        
+        function SetLabel(this, label)
+            this.label.String = num2str(label);
         end
         
         function vector = ToVector(this)
-            vector = [this.startX, this.startY, this.endX, this.endY, this.type];
+            vector = [this.src.x, this.src.y, this.dest.x, this.dest.y, this.type];
         end
     end
     
