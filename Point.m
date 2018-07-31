@@ -44,9 +44,18 @@ classdef Point < handle
             this.y = y;
         end
         
+        function Shift(this, x, y)
+            this.dot.XData = this.dot.XData + x;
+            this.dot.YData = this.dot.YData + y;
+            this.circle.XData = this.circle.XData + x;
+            this.circle.YData = this.circle.YData + y;
+            this.x = this.x + x;
+            this.y = this.y + y;
+        end
+        
         function Boldify(this)
             this.dot.MarkerSize = 15;
-            this.circle.LineWidth = 3;
+            this.circle.LineWidth = 2;
         end
         
         function Deboldify(this)

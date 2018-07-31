@@ -8,7 +8,7 @@ classdef MarkingPointList < handle
         % First number: index in variable 'markingPoints'.
         % Second number: 1 means the src point, 2 means the dest point.
         seletedPointIndex = [0, 0]
-        pointForCreate = []
+        mkPointForCreate = []
     end
     
     methods
@@ -19,10 +19,17 @@ classdef MarkingPointList < handle
             if size(marks, 2) < 5
                 marks = [marks, zeros(size(marks, 1), 5 - size(marks, 2))];
             end
-            for i = size(marks, 1)
+            for i = 1:size(marks, 1)
                 mkpoint = MarkingPoint(marks(i, :));
-                this.markingPoints = [markingPoints; mkpoint];
+                this.markingPoints = [this.markingPoints; mkpoint];
                 mkpoint.SetLabel(i);
+            end
+        end
+        
+        function marks = ToVector(this)
+            marks = zeros(length(this.markingPoints), 5);
+            for i = size(marks, 1)
+                marks(i, :) = this.markingPoints(i).ToVector();
             end
         end
 
@@ -31,8 +38,16 @@ classdef MarkingPointList < handle
                 this.seletedPoint.Deboldify();
             end
             this.seletedPointIndex = [index, type];
-            if index == 0 && type == 0
-                this.seletedPoint = this.pointForCreate;
+            if type == 0
+                this.seletedPoint = [];
+                return;
+            end
+            if index == 0
+                if type == 1
+                    this.seletedPoint = this.mkPointForCreate.src;
+                elseif type == 2
+                    this.seletedPoint = this.mkPointForCreate.dest;
+                end
             else
                 if type == 1
                     this.seletedPoint = this.markingPoints(index).src;
@@ -65,44 +80,64 @@ classdef MarkingPointList < handle
             end
         end
         
-        function FindPointInRangeOrCreate(this, x, y)
-            if(~this.FindPointInRange(x, y))
-                this.pointForCreate = Point(x, y);
-                this.selectPoint(0, 0);
-            end
-        end
-        
-        function FindPointInRangeToDelete(this, x, y)
+        function FindPointInRangeAndDelete(this, x, y)
             if(this.FindPointInRange(x, y))
                 this.DeleteMarkingPoint();
             end
         end
         
-        function CancelPointCreation(this)
-            delete(this.pointForCreate);
-            this.pointForCreate = [];
-            this.selectPoint(0, 0);
+        function [x, y, creating] = FindPointInRangeOrCreate(this, x, y)
+            creating = false;
+            if(~this.FindPointInRange(x, y))
+                this.mkPointForCreate = MarkingPoint(x, y);
+                this.selectPoint(0, 1);
+                creating = true;
+            end
+            x = this.seletedPoint.x;
+            y = this.seletedPoint.y;
         end
         
-        function AddMarkingPoint(this, x, y)
-            if isempty(this.pointForCreate)
+        function CreatingSecondPoint(this, x, y)
+            this.mkPointForCreate.DelayConstruct(x, y);
+            this.selectPoint(0, 2);
+        end
+        
+        function AddMarkingPoint(this)
+            if isempty(this.mkPointForCreate)
                 return
             end
-            mkpoint = MarkingPoint(this.pointForCreate, Point(x, y), 0);
-            this.markingPoints = [this.markingPoints; mkpoint];
-            mkpoint.SetLabel(length(this.markingPoints));
-            this.pointForCreate = [];
+            this.markingPoints = [this.markingPoints; this.mkPointForCreate];
+            this.mkPointForCreate.SetLabel(length(this.markingPoints));
+            this.mkPointForCreate = [];
             this.selectPoint(length(this.markingPoints), 2);
         end
         
         function SetPointPosition(this, x, y)
-            if this.seletedPoint == this.pointForCreate
-                this.seletedPoint.Set(x, y);
+            if ~isempty(this.mkPointForCreate)
+                if this.seletedPoint == this.mkPointForCreate.src
+                    this.seletedPoint.Set(x, y);
+                elseif this.seletedPoint == this.mkPointForCreate.dest
+                    this.mkPointForCreate.SetDest(x, y);
+                end
             else
                 if this.seletedPointIndex(2) == 1
                     this.markingPoints(this.seletedPointIndex(1)).SetSrc(x, y);
                 elseif this.seletedPointIndex(2) == 2
                     this.markingPoints(this.seletedPointIndex(1)).SetDest(x, y);
+                end
+            end
+        end
+        
+        function ShiftPointPosition(this, x, y)
+            if this.seletedPoint == this.mkPointForCreate.src
+                this.seletedPoint.Shift(x, y);
+            elseif this.seletedPoint == this.mkPointForCreate.dest
+                this.mkPointForCreate.ShiftDest(x, y);
+            else
+                if this.seletedPointIndex(2) == 1
+                    this.markingPoints(this.seletedPointIndex(1)).ShiftSrc(x, y);
+                elseif this.seletedPointIndex(2) == 2
+                    this.markingPoints(this.seletedPointIndex(1)).ShiftDest(x, y);
                 end
             end
         end
@@ -114,14 +149,17 @@ classdef MarkingPointList < handle
         end
         
         function DeleteMarkingPoint(this)
-            if this.seletedPointIndex(1) ~= 0
-                return;
+            if this.seletedPointIndex(1) == 0
+                delete(this.mkPointForCreate);
+                this.mkPointForCreate = [];
+            else
+                delete(this.markingPoints(this.seletedPointIndex(1)));
+                this.markingPoints(this.seletedPointIndex(1)) = [];
+                for i = this.seletedPointIndex(1) : length(this.markingPoints)
+                    this.markingPoints(i).SetLabel(i);
+                end
             end
-            delete(this.markingPoints(this.seletedPointIndex(1)));
-            this.markingPoints(this.seletedPointIndex(1)) = [];
-            for i = this.seletedPointIndex(1) : length(this.markingPoints)
-                this.markingPoints(i).SetLabel(i);
-            end
+            this.seletedPoint = [];
             this.selectPoint(0, 0);
         end
     end

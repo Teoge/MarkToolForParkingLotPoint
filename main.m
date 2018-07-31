@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 23-Jul-2018 16:10:42
+% Last Modified by GUIDE v2.5 31-Jul-2018 13:15:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,9 +58,9 @@ handles.output = hObject;
 handles.readSuccess = 0;
 set(gcf, 'WindowButtonDownFcn', @mouseClicked);
 set(gcf, 'WindowButtonUpFcn', @mouseReleased);
+set(gcf, 'WindowButtonMotionFcn', @updateCursor);
 set(gcf, 'WindowKeyPressFcn', @hotkeyPressed);
 set(gcf, 'WindowScrollWheelFcn', @scrollWhellFunction);
-set(gcf, 'WindowButtonMotionFcn', @updateCursor);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -101,6 +101,7 @@ handles.readSuccess = 1;
 handles.imagePath = [path, '\'];
 handles.images = dirs;
 handles.imageIndex = 1;
+handles.slotList = SlotList(handles.SlotTable, handles.TableInfo);
 loadImageAndMarks(hObject, handles);
 
 
@@ -117,24 +118,9 @@ name = [handles.imagePath, handles.images(handles.imageIndex).name];
 name(end - 2 : end) = 'mat';
 set(handles.LoadResult, 'String', 'Save Failed!');
 
-data.marks = handles.marks;
-SlotTable = get(handles.SlotTable,'data');
-SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
-SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
-SlotTable = cell2mat(SlotTable);
-%SlotTable(all(arrayfun(@(x) isempty(x)|isnan(x), SlotTable),2),:) = [];
-data.slots = SlotTable;
+data.marks = handles.markingPointList.ToVector();
+data.slots = handles.slotList.slots;
 save(name, '-struct', 'data', 'marks', 'slots');
-
-if ~isempty(handles.markLines)
-    delete(handles.markLines(:));
-    handles.markLines(:) = [];
-end
-if strcmp(get(hObject,'tag'),'SaveMark')
-    handles = drawSlots(handles, data.slots, handles.marks);
-    set(handles.LoadResult, 'String', 'Save Success!');
-end
-
 guidata(hObject, handles);
 
 
@@ -202,6 +188,43 @@ else
 end
 
 
+% --- Executes on button press in ShowSlots.
+function ShowSlots_Callback(hObject, ~, handles)
+% hObject    handle to ShowSlots (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if get(handles.ShowSlots, 'Value') == 0
+    handles.slotList.HidePlot();
+else
+    handles.slotList.ShowPlot(handles.markingPointList.markingPoints, handles.imageWidth);
+end
+guidata(hObject, handles);
+
+
+% --- Executes on selection change in PointType.
+function PointType_Callback(hObject, ~, handles)
+% hObject    handle to PointType (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+type = get(handles.PointType, 'Value') - 1;
+handles.markingPointList.SetMarkingPointType(type);
+guidata(hObject, handles);
+
+
+% --- Executes when entered data in editable cell(s) in SlotTable.
+function SlotTable_CellEditCallback(hObject, ~, handles)
+% hObject    handle to SlotTable (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+handles.slotList.UpdateSlotsFromTable();
+guidata(hObject, handles);
+
+
 function loadImageAndMarks(hObject, handles)
 name = [handles.imagePath, handles.images(handles.imageIndex).name];
 if ~exist(name, 'file')
@@ -210,36 +233,28 @@ else
     hold off;
     image = imread(name);
     imshow(image);
-    [handles.imageHeight, handles.imageWidth, ~] = size(image);
     hold on;
+    [handles.imageHeight, handles.imageWidth, ~] = size(image);
     set(handles.ImageFileName, 'String', ...
         ['No.', num2str(handles.imageIndex),': ', handles.images(handles.imageIndex).name]);
-    handles.markingPoints = [];
+    handles.markingPointList = [];
     name(end - 2 : end) = 'mat';
     if exist(name, 'file')
         data = load(name);
         if isfield(data,'marks')
-            for i = 1:size(data.marks, 1)
-                handles.markingPoints = [handles.markingPoints; MarkingPoint(data.marks(i, :))];
-            end
+            handles.markingPointList = MarkingPointList(data.marks);
         end
         if ~isfield(data,'slots')
             data.slots = [];
         end
-        slotsCell = num2cell(data.slots);
-        slotsCell{16,5} = [];
-        %slotsCell(:,3) = {1};
-        %slotsCell(:,4) = {90};
-        set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
-        handles.slotPlotter = SlotPlotter(slotsCell(1:15,1:4));
-        handles.slotPlotter.plotSlots(handles.markingPoints, handles.imageHeight);
+        handles.slotList.Initialize(data.slots, handles.markingPointList.markingPoints, handles.imageHeight);
     else
-        set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable,'data'))));
+        set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable, 'data'))));
     end
     handles.focusMode = false;
-    handles.selected = 0;
-    set(handles.SelectedMark, 'String', '0');
-    handles.moving = 0;
+    handles.mouseReleased = true;
+    handles.movingOffset = [0, 0];
+    handles.creatingPoint = false;
     set(handles.LoadResult, 'String', 'Load Success!');
     guidata(hObject, handles);
 end
@@ -259,6 +274,64 @@ elseif eventdata.VerticalScrollCount < 0
 end
 
 
+function mouseClicked( hObject, ~ )
+
+handles = guidata(hObject);
+if ~handles.readSuccess
+    return;
+end
+cursorPoint = get(handles.AxesImage, 'CurrentPoint');
+curX = cursorPoint(1,1);
+curY = cursorPoint(1,2);
+
+xLimits = get(handles.AxesImage, 'xlim');
+yLimits = get(handles.AxesImage, 'ylim');
+
+if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+        && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
+    if strcmp(get(gcf,'selectionType'), 'normal')
+        if ~handles.creatingPoint
+            [x, y, handles.creatingPoint] = handles.markingPointList.FindPointInRangeOrCreate(curX, curY);
+            handles.movingOffset = [x, y] - [curX, curY];
+            handles.mouseReleased = false;
+        else
+            handles.markingPointList.AddMarkingPoint();
+            handles.movingOffset = [0, 0];
+            handles.creatingPoint = false;
+            handles.mouseReleased = false;
+        end
+    elseif strcmp(get(gcf,'selectionType'), 'alt')
+        handles.markingPointList.FindPointInRangeAndDelete(curX, curY);
+        handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
+    elseif strcmp(get(gcf,'selectionType'), 'extend')
+        % When moving a marking point, click mouse right button to delete
+        % the marking point.
+        if ~handles.mouseReleased
+            handles.markingPointList.DeleteMarkingPoint();
+            handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
+        end
+    end
+    guidata(hObject, handles);
+end
+
+
+function mouseReleased(hObject, ~)
+handles = guidata(hObject);
+if ~handles.readSuccess
+    return;
+end
+cursorPoint = get(handles.AxesImage, 'CurrentPoint');
+curX = cursorPoint(1,1);
+curY = cursorPoint(1,2);
+if strcmp(get(gcf,'selectionType'), 'normal')
+    if handles.creatingPoint
+        handles.markingPointList.CreatingSecondPoint(curX, curY)
+    end
+    handles.mouseReleased = true;
+    guidata(hObject, handles);
+end
+
+
 function updateCursor(hObject, ~)
 handles = guidata(hObject);
 if ~handles.readSuccess
@@ -270,64 +343,11 @@ curY = cursorPoint(1,2);
 set(handles.CurrentPoint, 'String', ['(',num2str(curX,'%.2f'),',',num2str(curY,'%.2f'),')']);
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
-if handles.moving ~= 0 && curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
         && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
-    handles.marks(handles.moving, :) = [curX, curY] + handles.movingOffset;
-    if all(ishandle(handles.markPlots(handles.moving, :)))
-        delete(handles.markPlots(handles.moving, :));
-        handles = plotMarks(handles, handles.moving);
-        SlotTable = get(handles.SlotTable,'data');
-        SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
-        SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
-        SlotTable = cell2mat(SlotTable);
-        if ~isempty(handles.markLines)
-            delete(handles.markLines(:));
-            handles.markLines(:) = [];
-        end
-        handles = drawSlots(handles, SlotTable, handles.marks);
+    if ~handles.mouseReleased || handles.creatingPoint
+        handles.markingPointList.SetPointPosition(curX + handles.movingOffset(1), curY + handles.movingOffset(2));
+        handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
     end
     guidata(hObject, handles);
-end
-
-
-function mouseReleased(hObject, ~)
-handles = guidata(hObject);
-if ~handles.readSuccess
-    return;
-end
-if strcmp(get(gcf,'selectionType'), 'normal') && handles.moving ~= 0
-    handles.moving = 0;
-    guidata(hObject, handles);
-end
-
-
-% --- Executes on button press in ShowSlots.
-function ShowSlots_Callback(hObject, eventdata, handles)
-% hObject    handle to ShowSlots (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of ShowSlots
-
-
-% --- Executes on selection change in PointType.
-function PointType_Callback(hObject, eventdata, handles)
-% hObject    handle to PointType (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns PointType contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from PointType
-
-
-% --- Executes during object creation, after setting all properties.
-function PointType_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to PointType (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
 end

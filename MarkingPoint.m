@@ -14,19 +14,22 @@ classdef MarkingPoint < handle
     
     methods
         function this = MarkingPoint(varargin)
-            assert(nargin == 1 || nargin == 3)
+            assert(nargin == 1 || nargin == 2)
             if nargin == 1
                 vector = varargin{1}(:);
                 assert(length(vector) == 5);
                 this.src = Point(vector(1), vector(2));
                 this.dest = Point(vector(3), vector(4));
                 this.type = vector(5);
+                assert(this.type==0 || this.type==1);
+                this.Plot();
             else
-                this.src = varargin{1};
-                this.dest = varargin{2};
-                this.type = varargin{3};
+                this.src = Point(varargin{1}, varargin{2});
             end
-            assert(this.type==0 || this.type==1);
+        end
+        
+        function DelayConstruct(this, x, y)
+            this.dest = Point(x, y);
             this.Plot();
         end
         
@@ -69,8 +72,8 @@ classdef MarkingPoint < handle
             end
             this.bridge.XData = X;
             this.bridge.YData = Y;
-            this.label.Position(1) = this.src.x;
-            this.label.Position(2) = this.src.y;
+            this.label.Position(1) = this.src.x + this.src.radius;
+            this.label.Position(2) = this.src.y + this.src.radius;
         end
         
         function SetSrc(this, x, y)
@@ -78,8 +81,18 @@ classdef MarkingPoint < handle
             this.UpdatePlot();
         end
         
+        function ShiftSrc(this, x, y)
+            this.src.Shift(x, y);
+            this.UpdatePlot();
+        end
+        
         function SetDest(this, x, y)
             this.dest.Set(x, y);
+            this.UpdatePlot();
+        end
+        
+        function ShiftDest(this, x, y)
+            this.dest.Shift(x, y);
             this.UpdatePlot();
         end
         
