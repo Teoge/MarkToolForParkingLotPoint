@@ -28,7 +28,7 @@ classdef MarkingPointList < handle
         
         function marks = ToVector(this)
             marks = zeros(length(this.markingPoints), 5);
-            for i = size(marks, 1)
+            for i = 1:size(marks, 1)
                 marks(i, :) = this.markingPoints(i).ToVector();
             end
         end
@@ -129,10 +129,12 @@ classdef MarkingPointList < handle
         end
         
         function ShiftPointPosition(this, x, y)
-            if this.seletedPoint == this.mkPointForCreate.src
-                this.seletedPoint.Shift(x, y);
-            elseif this.seletedPoint == this.mkPointForCreate.dest
-                this.mkPointForCreate.ShiftDest(x, y);
+            if ~isempty(this.mkPointForCreate)
+                if this.seletedPoint == this.mkPointForCreate.src
+                    this.seletedPoint.Shift(x, y);
+                elseif this.seletedPoint == this.mkPointForCreate.dest
+                    this.mkPointForCreate.ShiftDest(x, y);
+                end
             else
                 if this.seletedPointIndex(2) == 1
                     this.markingPoints(this.seletedPointIndex(1)).ShiftSrc(x, y);

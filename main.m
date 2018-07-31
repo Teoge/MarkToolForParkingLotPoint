@@ -117,10 +117,10 @@ end
 name = [handles.imagePath, handles.images(handles.imageIndex).name];
 name(end - 2 : end) = 'mat';
 set(handles.LoadResult, 'String', 'Save Failed!');
-
 data.marks = handles.markingPointList.ToVector();
 data.slots = handles.slotList.slots;
 save(name, '-struct', 'data', 'marks', 'slots');
+set(handles.LoadResult, 'String', 'Save Success!');
 guidata(hObject, handles);
 
 
