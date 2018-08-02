@@ -16,8 +16,8 @@ classdef MarkingPointList < handle
             if isempty(marks)
                 return
             end
-            if size(marks, 2) < 5
-                marks = [marks, zeros(size(marks, 1), 5 - size(marks, 2))];
+            if size(marks, 2) == 2
+                marks = [marks, marks + 10, zeros(size(marks, 1), 1)];
             end
             for i = 1:size(marks, 1)
                 mkpoint = MarkingPoint(marks(i, :));
@@ -80,21 +80,25 @@ classdef MarkingPointList < handle
             end
         end
         
-        function FindPointInRangeAndDelete(this, x, y)
-            if(this.FindPointInRange(x, y))
-                this.DeleteMarkingPoint();
-            end
-        end
-        
-        function [x, y, creating] = FindPointInRangeOrCreate(this, x, y)
-            creating = false;
-            if(~this.FindPointInRange(x, y))
-                this.mkPointForCreate = MarkingPoint(x, y);
-                this.selectPoint(0, 1);
-                creating = true;
+        function [x, y, type] = GetSelectedInfo(this)
+            x = 0;
+            y = 0;
+            type = 0;
+            if this.seletedPointIndex(2) == 0
+                return;
             end
             x = this.seletedPoint.x;
             y = this.seletedPoint.y;
+            if this.seletedPointIndex(1) == 0
+                type = this.mkPointForCreate.type;
+            else
+                type = this.markingPoints(this.seletedPointIndex(1)).type;
+            end
+        end
+        
+        function CreatingFirstPoint(this, x, y)
+            this.mkPointForCreate = MarkingPoint(x, y);
+            this.selectPoint(0, 1);
         end
         
         function CreatingSecondPoint(this, x, y)

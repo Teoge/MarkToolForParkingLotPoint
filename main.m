@@ -121,6 +121,7 @@ data.marks = handles.markingPointList.ToVector();
 data.slots = handles.slotList.slots;
 save(name, '-struct', 'data', 'marks', 'slots');
 set(handles.LoadResult, 'String', 'Save Success!');
+handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
 guidata(hObject, handles);
 
 
@@ -312,22 +313,43 @@ disp(get(gcf,'selectionType'));
 if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
         && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
     if strcmp(get(gcf,'selectionType'), 'normal')
-        if ~handles.creatingPoint
-            [x, y, handles.creatingPoint] = handles.markingPointList.FindPointInRangeOrCreate(curX, curY);
-            handles.pointMovingOffset = [x, y] - [curX, curY];
-            handles.movingPoint = true;
+        if handles.manification == 2 || handles.manification == 3
+            if handles.markingPointList.FindPointInRange(curX, curY)
+                [x, y, type] = handles.markingPointList.GetSelectedInfo();
+                handles.pointMovingOffset = [x, y] - [curX, curY];
+                set(handles.PointType, 'Value', type + 1);
+                handles.movingPoint = true;
+            else
+                handles.axesMovingStart = get(handles.ReferenceAxes, 'CurrentPoint');
+                handles.originalXLimits = xLimits;
+                handles.originalYLimits = yLimits;
+                handles.movingAxes = true;
+            end
         else
-            handles.markingPointList.AddMarkingPoint();
-            handles.pointMovingOffset = [0, 0];
-            handles.creatingPoint = false;
-            handles.movingPoint = true;
+            if ~handles.creatingPoint
+                if ~handles.markingPointList.FindPointInRange(curX, curY)
+                    handles.markingPointList.CreatingFirstPoint(curX, curY);
+                    handles.creatingPoint = true;
+                end
+                [x, y, type] = handles.markingPointList.GetSelectedInfo();
+                handles.pointMovingOffset = [x, y] - [curX, curY];
+                set(handles.PointType, 'Value', type + 1);
+                handles.movingPoint = true;
+            else
+                handles.markingPointList.AddMarkingPoint();
+                handles.pointMovingOffset = [0, 0];
+                handles.creatingPoint = false;
+                handles.movingPoint = true;
+            end
         end
     elseif strcmp(get(gcf,'selectionType'), 'alt')
         if handles.creatingPoint
             handles.markingPointList.DeleteMarkingPoint();
             handles.creatingPoint = false;
         else
-            handles.markingPointList.FindPointInRangeAndDelete(curX, curY);
+            if handles.markingPointList.FindPointInRange(curX, curY)
+                handles.markingPointList.DeleteMarkingPoint();
+            end
         end
         handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
     elseif strcmp(get(gcf,'selectionType'), 'extend')
@@ -367,7 +389,7 @@ if handles.movingPoint
         handles.movingPoint = false;
     end
 elseif handles.movingAxes
-    if strcmp(get(gcf,'selectionType'), 'extend')
+    if strcmp(get(gcf,'selectionType'), 'normal') || strcmp(get(gcf,'selectionType'), 'extend')
         handles.movingAxes = false;
     end
 end
@@ -426,9 +448,10 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'d') && ~handles.movingPoint && ~hand
     handles.markingPointList.ShiftPointPosition(step, 0);
     handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
     guidata(hObject, handles);
-elseif strcmp(get(gcf, 'CurrentCharacter'),'e')
+elseif strcmp(get(gcf, 'CurrentCharacter'),'q')
     main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
-elseif double(get(gcf, 'CurrentCharacter'))==32
+    main('LoadLastImage_Callback', hObject, eventdata, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'e')
     main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
     main('LoadNextImage_Callback', hObject, eventdata, handles);
 elseif double(get(gcf, 'CurrentCharacter'))==29
