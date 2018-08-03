@@ -46,12 +46,12 @@ classdef MarkingPointList < handle
                     end
                     x = marks(i, 1);
                     y = marks(i, 2);
-                    while x > 0.5 && x < imageSize + 0.5 && x > 0.5 && y < imageSize + 0.5
+                    while x > 0.5 && x < imageSize + 0.5 && y > 0.5 && y < imageSize + 0.5
                         x = x + vec(1);
                         y = y + vec(2);
                     end
-                    marks(i, 3) = x;
-                    marks(i, 4) = y;
+                    marks(i, 3) = x - 10 * vec(1);
+                    marks(i, 4) = y - 10 * vec(2);
                 end
             end
         end
