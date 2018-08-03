@@ -242,11 +242,11 @@ else
     name(end - 2 : end) = 'mat';
     if exist(name, 'file')
         data = load(name);
-        if isfield(data,'marks')
-            handles.markingPointList = MarkingPointList(data.marks);
-        end
         if ~isfield(data,'slots')
             data.slots = [];
+        end
+        if isfield(data,'marks')
+            handles.markingPointList = MarkingPointList(data.marks, data.slots, handles.imageHeight);
         end
         handles.slotList.Initialize(data.slots, handles.markingPointList.markingPoints, handles.imageHeight);
     else
@@ -309,7 +309,6 @@ curY = cursorPoint(1,2);
 
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
-disp(get(gcf,'selectionType'));
 if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
         && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
     if strcmp(get(gcf,'selectionType'), 'normal')
@@ -380,7 +379,6 @@ end
 cursorPoint = get(handles.AxesImage, 'CurrentPoint');
 curX = cursorPoint(1,1);
 curY = cursorPoint(1,2);
-disp(get(gcf,'selectionType'));
 if handles.movingPoint
     if strcmp(get(gcf,'selectionType'), 'normal') || strcmp(get(gcf,'selectionType'), 'extend')
         if handles.creatingPoint

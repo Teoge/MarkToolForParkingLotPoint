@@ -12,18 +12,72 @@ classdef MarkingPointList < handle
     end
     
     methods
-        function this = MarkingPointList(marks)
+        function this = MarkingPointList(marks, slots, imageSize)
             if isempty(marks)
                 return
             end
-            if size(marks, 2) == 2
-                marks = [marks, marks + 10, zeros(size(marks, 1), 1)];
+            marks = this.DeductDestPointBySlot(marks, slots, imageSize);
+            if size(marks, 2) == 4
+                marks = [marks, zeros(size(marks, 1), 1)];
             end
             for i = 1:size(marks, 1)
                 mkpoint = MarkingPoint(marks(i, :));
                 this.markingPoints = [this.markingPoints; mkpoint];
                 mkpoint.SetLabel(i);
             end
+        end
+        
+        function marks = DeductDestPointBySlot(this, marks, slots, imageSize)
+            if size(marks, 2) ~= 2
+                return
+            end
+            marks = [marks, marks + 10, zeros(size(marks, 1), 1)];
+            if isempty(slots)
+                return;
+            end
+            for i = 1:size(marks, 1)
+                foundSlot = this.SearchSlotForMarkingPoint(slots, i);
+                if any(foundSlot)
+                    vec = this.GetSeperatorVectorFromSlot(marks, slots, foundSlot(1));
+                    if foundSlot(2) ~= 0
+                        vec2 = this.GetSeperatorVectorFromSlot(marks, slots, foundSlot(2));
+                        vec = vec + vec2;
+                        vec = vec / norm(vec);
+                    end
+                    x = marks(i, 1);
+                    y = marks(i, 2);
+                    while x > 0.5 && x < imageSize + 0.5 && x > 0.5 && y < imageSize + 0.5
+                        x = x + vec(1);
+                        y = y + vec(2);
+                    end
+                    marks(i, 3) = x;
+                    marks(i, 4) = y;
+                end
+            end
+        end
+        
+        function foundSlot = SearchSlotForMarkingPoint(~, slots, i)
+            foundSlot = [0, 0];
+            for j = 1:size(slots, 1)
+                if slots(j, 1) == i || slots(j, 2) == i
+                    if foundSlot(1) == 0
+                        foundSlot(1) = j;
+                    elseif  foundSlot(2) == 0
+                        foundSlot(2) = j;
+                    else
+                        error('wrong slot label');
+                    end
+                end
+            end
+        end
+        
+        function vec = GetSeperatorVectorFromSlot(~, marks, slots, i)
+            x1 = marks(slots(i, 1), 1);
+            y1 = marks(slots(i, 1), 2);
+            x2 = marks(slots(i, 2), 1);
+            y2 = marks(slots(i, 2), 2);
+            vec = [x2-x1, y2-y1] * [0, -1; 1, 0];
+            vec = vec / norm(vec);
         end
         
         function marks = ToVector(this)
