@@ -5,8 +5,10 @@ classdef MarkingPointList < handle
     properties
         markingPoints
         seletedPoint = []
-        % First number: index in variable 'markingPoints'.
-        % Second number: 1 means the src point, 2 means the dest point.
+        % First number: index in variable 'markingPoints'. 0 means seleted
+        % marking point is mkPointForCreate
+        % Second number: 1 means the src point, 2 means the dest point. 0
+        % means no point is selected
         seletedPointIndex = [0, 0]
         mkPointForCreate = []
     end
@@ -93,6 +95,7 @@ classdef MarkingPointList < handle
             end
             this.seletedPointIndex = [index, type];
             if type == 0
+                this.seletedPointIndex(1) = 0;
                 this.seletedPoint = [];
                 return;
             end

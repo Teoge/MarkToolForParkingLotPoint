@@ -277,22 +277,44 @@ curX = cursorPoint(1,1);
 curY = cursorPoint(1,2);
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
-newXLimits = [[0.5,handles.imageWidth+0.5]; [curX-120,curX+120]; [curX-40,curX+40]];
-newYLimits = [[0.5,handles.imageHeight+0.5]; [curY-120,curY+120]; [curY-40,curY+40]];
-if (curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
-    if eventdata.VerticalScrollCount > 0
-        if handles.manification > 1
-            handles.manification = handles.manification - 1;
-        end
-    elseif eventdata.VerticalScrollCount < 0
-        if handles.manification < 3
-            handles.manification = handles.manification + 1;
-        end
+axesSizes = [handles.imageWidth, 240, 80];
+if ~(curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+    return
+end
+if eventdata.VerticalScrollCount > 0
+    if handles.manification <= 1
+        handles.manification = 1;
+        return;
     end
-    set(handles.ReferenceAxes, 'xlim', newXLimits(handles.manification, :), ...
-        'ylim', newYLimits(handles.manification, :));
-    set(handles.AxesImage, 'xlim', newXLimits(handles.manification, :), ...
-        'ylim', newYLimits(handles.manification, :));
+    if handles.manification == 2
+        set(handles.ReferenceAxes, 'xlim', [0.5,handles.imageWidth+0.5], ...
+            'ylim', [0.5,handles.imageHeight+0.5]);
+        set(handles.AxesImage, 'xlim', [0.5,handles.imageWidth+0.5], ...
+            'ylim', [0.5,handles.imageHeight+0.5]);
+    elseif handles.manification == 3
+        m = handles.manification;
+        x1 = curX - axesSizes(m-1) / axesSizes(m) * (curX-xLimits(1));
+        y1 = curY - axesSizes(m-1) / axesSizes(m) * (curY-yLimits(1));
+        x2 = curX + axesSizes(m-1) / axesSizes(m) * (xLimits(2)-curX);
+        y2 = curY + axesSizes(m-1) / axesSizes(m) * (yLimits(2)-curY);
+        set(handles.ReferenceAxes, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+        set(handles.AxesImage, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    end
+    handles.manification = handles.manification - 1;
+    guidata(hObject, handles);
+elseif eventdata.VerticalScrollCount < 0
+    if handles.manification >= 3
+        handles.manification = 3;
+        return
+    end
+    m = handles.manification;
+    x1 = curX - axesSizes(m+1) / axesSizes(m) * (curX-xLimits(1));
+    y1 = curY - axesSizes(m+1) / axesSizes(m) * (curY-yLimits(1));
+    x2 = curX + axesSizes(m+1) / axesSizes(m) * (xLimits(2)-curX);
+    y2 = curY + axesSizes(m+1) / axesSizes(m) * (yLimits(2)-curY);
+    set(handles.ReferenceAxes, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    set(handles.AxesImage, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    handles.manification = handles.manification + 1;
     guidata(hObject, handles);
 end
 
@@ -452,6 +474,15 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'q')
 elseif strcmp(get(gcf, 'CurrentCharacter'),'e')
     main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
     main('LoadNextImage_Callback', hObject, eventdata, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'c')
+    [~, ~, type] = handles.markingPointList.GetSelectedInfo();
+    type = 1 - type;
+    set(handles.PointType, 'Value', type + 1);
+    handles.markingPointList.SetMarkingPointType(type);
+    guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'v')
+    set(handles.ShowSlots, 'Value', 1 - get(handles.ShowSlots, 'Value'));
+    main('ShowSlots_Callback', handles.ShowSlots, eventdata, handles);
 elseif double(get(gcf, 'CurrentCharacter'))==29
     main('LoadNextImage_Callback', hObject, eventdata, handles);
 elseif double(get(gcf, 'CurrentCharacter'))==28
