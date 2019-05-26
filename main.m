@@ -247,9 +247,12 @@ else
         end
         if isfield(data,'marks')
             handles.markingPointList = MarkingPointList(data.marks, data.slots, handles.imageHeight);
+        else
+            handles.markingPointList = MarkingPointList([], [], handles.imageHeight);
         end
         handles.slotList.Initialize(data.slots, handles.markingPointList.markingPoints, handles.imageHeight);
     else
+        handles.markingPointList = MarkingPointList([], [], handles.imageHeight);
         set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable, 'data'))));
     end
     handles.manification = 1;
