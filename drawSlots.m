@@ -43,22 +43,13 @@ for i = 1:size(slots,1)
             end
             vec = [x2-x1, y2-y1]*[0, -1; 1, 0];
             vec = vec / norm(vec);
-        case 2
-            if slots(i, 4) <= 0 || slots(i, 4) >= 90
+        case {2, 3}
+            if slots(i, 4) <= 0
                 set(handles.TableInfo, 'String', 'Invalid Slot in Table');
                 continue;
             end
             rad = deg2rad(slots(i, 4));
             vec = [x2-x1, y2-y1]*[cos(rad), -sin(rad); sin(rad), cos(rad)];
-            vec = vec / norm(vec);
-            sideLength = 280 / sin(rad);
-        case 3
-            if slots(i, 4) <= 0 || slots(i, 4) >= 90
-                set(handles.TableInfo, 'String', 'Invalid Slot in Table');
-                continue;
-            end
-            rad = deg2rad(slots(i, 4));
-            vec = [x2-x1, y2-y1]*[-cos(rad), -sin(rad); sin(rad), -cos(rad)];
             vec = vec / norm(vec);
             sideLength = 280 / sin(rad);
         otherwise
