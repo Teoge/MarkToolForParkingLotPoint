@@ -100,22 +100,13 @@ classdef SlotList < handle
                         end
                         vec = [x2-x1, y2-y1]*[0, -1; 1, 0];
                         vec = vec / norm(vec);
-                    case 2
-                        if this.slots(i, 4) <= 0 || this.slots(i, 4) >= 90
+                    case {2, 3}
+                        if this.slots(i, 4) <= 0
                             set(this.slotInfo, 'String', 'Invalid Slot in Table');
                             return;
                         end
                         rad = deg2rad(this.slots(i, 4));
                         vec = [x2-x1, y2-y1]*[cos(rad), -sin(rad); sin(rad), cos(rad)];
-                        vec = vec / norm(vec);
-                        sideLength = 280 / sin(rad);
-                    case 3
-                        if this.slots(i, 4) <= 0 || this.slots(i, 4) >= 90
-                            set(this.slotInfo, 'String', 'Invalid Slot in Table');
-                            return;
-                        end
-                        rad = deg2rad(this.slots(i, 4));
-                        vec = [x2-x1, y2-y1]*[-cos(rad), -sin(rad); sin(rad), -cos(rad)];
                         vec = vec / norm(vec);
                         sideLength = 280 / sin(rad);
                     otherwise
