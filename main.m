@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 10-Apr-2017 22:21:55
+% Last Modified by GUIDE v2.5 13-Jul-2019 10:34:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -101,6 +101,7 @@ handles.readSuccess = 1;
 handles.imagePath = [path, '\'];
 handles.images = dirs;
 handles.imageIndex = 1;
+handles.slotList = SlotList(handles.SlotTable, handles.TableInfo);
 loadImageAndMarks(hObject, handles);
 
 
@@ -116,25 +117,11 @@ end
 name = [handles.imagePath, handles.images(handles.imageIndex).name];
 name(end - 2 : end) = 'mat';
 set(handles.LoadResult, 'String', 'Save Failed!');
-
-data.marks = handles.marks;
-SlotTable = get(handles.SlotTable,'data');
-SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
-SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
-SlotTable = cell2mat(SlotTable);
-%SlotTable(all(arrayfun(@(x) isempty(x)|isnan(x), SlotTable),2),:) = [];
-data.slots = SlotTable;
+data.marks = handles.pointList.ToVector();
+data.slots = handles.slotList.slots;
 save(name, '-struct', 'data', 'marks', 'slots');
-
-if ~isempty(handles.markLines)
-    delete(handles.markLines(:));
-    handles.markLines(:) = [];
-end
-if strcmp(get(hObject,'tag'),'SaveMark')
-    handles = drawSlots(handles, data.slots, handles.marks);
-    set(handles.LoadResult, 'String', 'Save Success!');
-end
-
+set(handles.LoadResult, 'String', 'Save Success!');
+handles.slotList.Replot(handles.pointList.points, handles.imageSize);
 guidata(hObject, handles);
 
 
@@ -202,6 +189,21 @@ else
 end
 
 
+% --- Executes when entered data in editable cell(s) in SlotTable.
+function SlotTable_CellEditCallback(hObject, ~, handles)
+% hObject    handle to SlotTable (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+handles.slotList.UpdateSlotsFromTable();
+handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+guidata(hObject, handles);
+
+
 function loadImageAndMarks(hObject, handles)
 name = [handles.imagePath, handles.images(handles.imageIndex).name];
 if ~exist(name, 'file')
@@ -210,40 +212,42 @@ else
     hold off;
     image = imread(name);
     imshow(image);
-    [handles.imageHeight, handles.imageWidth, ~] = size(image);
+    [imageHeight, imageWidth, ~] = size(image);
+    if imageHeight ~= imageWidth
+        set(handles.LoadResult, 'String', 'Incorrect image ratio');
+        return
+    else
+        handles.imageSize = imageHeight;
+    end
     hold on;
     set(handles.ImageFileName, 'String', ...
         ['No.', num2str(handles.imageIndex),': ', handles.images(handles.imageIndex).name]);
-    handles.marks = [];
-    handles.markPlots = [];
-    handles.markLines = [];
+    handles.pointList = [];
     name(end - 2 : end) = 'mat';
     if exist(name, 'file')
         data = load(name);
-        if isfield(data,'marks')
-            if ~isempty(data.marks)
-                handles.marks = data.marks(:,1:2);
-            end
-        end
         if ~isfield(data,'slots')
             data.slots = [];
         end
-        slotsCell = num2cell(data.slots);
-        slotsCell{16,5} = [];
-        %slotsCell(:,3) = {1};
-        %slotsCell(:,4) = {90};
-    	set(handles.SlotTable, 'data', slotsCell(1:15,1:4));
-        handles = drawSlots(handles, data.slots, handles.marks);
-        for i = 1:size(handles.marks, 1)
-            handles = plotMarks(handles, i);
+        if isfield(data,'marks')
+            handles.pointList = PointList(data.marks, handles.SelectedMark);
+        else
+            handles.pointList = PointList([], handles.SelectedMark);
         end
+        handles.slotList.Initialize(data.slots, handles.pointList.points, handles.imageSize);
     else
-        set(handles.SlotTable, 'data', cell(size(get(handles.SlotTable,'data'))));
+        handles.pointList = PointList([], handles.SelectedMark);
+        handles.slotList.Initialize([], handles.pointList.points, handles.imageSize);
     end
-    handles.focusMode = false;
-    handles.selected = 0;
-    set(handles.SelectedMark, 'String', '0');
-    handles.moving = 0;
+    handles.manification = 1;
+    % For moving point with mouse
+    handles.movingPoint = false;
+    handles.pointMovingOffset = [0, 0];
+    % For moving axes with mouse
+    handles.movingAxes = false;
+    handles.axesMovingStart = [0, 0];
+    handles.originalXLimits = [0, 0];
+    handles.originalYLimits = [0, 0];
     set(handles.LoadResult, 'String', 'Load Success!');
     guidata(hObject, handles);
 end
@@ -251,17 +255,122 @@ end
 
 function scrollWhellFunction(hObject, eventdata)
 handles = guidata(hObject);
+if ~handles.readSuccess || handles.movingAxes
+    return;
+end
+cursorPoint = get(handles.AxesImage, 'CurrentPoint');
+curX = cursorPoint(1,1);
+curY = cursorPoint(1,2);
+xLimits = get(handles.AxesImage, 'xlim');
+yLimits = get(handles.AxesImage, 'ylim');
+axesSizes = [handles.imageSize, 0.4*handles.imageSize, 0.1*handles.imageSize];
+if ~(curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits))
+    return
+end
+if eventdata.VerticalScrollCount > 0
+    if handles.manification <= 1
+        handles.manification = 1;
+        return;
+    end
+    if handles.manification == 2
+        set(handles.ReferenceAxes, 'xlim', [0.5,handles.imageSize+0.5], ...
+            'ylim', [0.5,handles.imageSize+0.5]);
+        set(handles.AxesImage, 'xlim', [0.5,handles.imageSize+0.5], ...
+            'ylim', [0.5,handles.imageSize+0.5]);
+    elseif handles.manification == 3
+        m = handles.manification;
+        x1 = curX - axesSizes(m-1) / axesSizes(m) * (curX-xLimits(1));
+        y1 = curY - axesSizes(m-1) / axesSizes(m) * (curY-yLimits(1));
+        x2 = curX + axesSizes(m-1) / axesSizes(m) * (xLimits(2)-curX);
+        y2 = curY + axesSizes(m-1) / axesSizes(m) * (yLimits(2)-curY);
+        set(handles.ReferenceAxes, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+        set(handles.AxesImage, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    end
+    handles.manification = handles.manification - 1;
+    guidata(hObject, handles);
+elseif eventdata.VerticalScrollCount < 0
+    if handles.manification >= 3
+        handles.manification = 3;
+        return
+    end
+    m = handles.manification;
+    x1 = curX - axesSizes(m+1) / axesSizes(m) * (curX-xLimits(1));
+    y1 = curY - axesSizes(m+1) / axesSizes(m) * (curY-yLimits(1));
+    x2 = curX + axesSizes(m+1) / axesSizes(m) * (xLimits(2)-curX);
+    y2 = curY + axesSizes(m+1) / axesSizes(m) * (yLimits(2)-curY);
+    set(handles.ReferenceAxes, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    set(handles.AxesImage, 'xlim', [x1, x2], 'ylim', [y1, y2]);
+    handles.manification = handles.manification + 1;
+    handles.pointList.DeselectIfNotInRange(x1, y1, x2, y2);
+    guidata(hObject, handles);
+end
+
+
+function mouseClicked( hObject, ~ )
+
+handles = guidata(hObject);
 if ~handles.readSuccess
     return;
 end
-if eventdata.VerticalScrollCount > 0
-    SaveMark_Callback(hObject, eventdata, handles);
-    LoadNextImage_Callback(hObject, eventdata, handles);
-elseif eventdata.VerticalScrollCount < 0
-    SaveMark_Callback(hObject, eventdata, handles);
-    LoadLastImage_Callback(hObject, eventdata, handles);
+cursorPoint = get(handles.AxesImage, 'CurrentPoint');
+curX = cursorPoint(1,1);
+curY = cursorPoint(1,2);
+
+xLimits = get(handles.AxesImage, 'xlim');
+yLimits = get(handles.AxesImage, 'ylim');
+if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+        && curX > 0.5 && curX < handles.imageSize + 0.5 && curY > 0.5 && curY < handles.imageSize + 0.5
+    if strcmp(get(gcf,'selectionType'), 'normal')
+        if handles.manification == 2 || handles.manification == 3
+            if handles.pointList.FindPointInRange(curX, curY)
+                [px, py] = handles.pointList.GetSelectedPostion();
+                handles.pointMovingOffset = [px, py] - [curX, curY];
+                handles.movingPoint = true;
+                handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+            else
+                handles.axesMovingStart = get(handles.ReferenceAxes, 'CurrentPoint');
+                handles.originalXLimits = xLimits;
+                handles.originalYLimits = yLimits;
+                handles.movingAxes = true;
+            end
+        else
+            if ~handles.pointList.FindPointInRange(curX, curY)
+                handles.pointList.AddPoint(curX, curY);
+            end
+            [px, py] = handles.pointList.GetSelectedPostion();
+            handles.pointMovingOffset = [px, py] - [curX, curY];
+            handles.movingPoint = true;
+            handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+        end
+    elseif strcmp(get(gcf,'selectionType'), 'alt')
+        if handles.pointList.FindPointInRange(curX, curY)
+            handles.pointList.DeletePoint();
+            if handles.movingPoint
+                handles.movingPoint = false;
+            end
+        end
+        handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+    end
+    guidata(hObject, handles);
 end
 
+
+function mouseReleased(hObject, ~)
+handles = guidata(hObject);
+if ~handles.readSuccess
+    return;
+end
+% disp(get(gcf,'selectionType'));
+if handles.movingPoint
+    if strcmp(get(gcf,'selectionType'), 'normal')
+        handles.movingPoint = false;
+    end
+elseif handles.movingAxes
+    if strcmp(get(gcf,'selectionType'), 'normal') || strcmp(get(gcf,'selectionType'), 'alt')
+        handles.movingAxes = false;
+    end
+end
+guidata(hObject, handles);
 
 function updateCursor(hObject, ~)
 handles = guidata(hObject);
@@ -274,32 +383,58 @@ curY = cursorPoint(1,2);
 set(handles.CurrentPoint, 'String', ['(',num2str(curX,'%.2f'),',',num2str(curY,'%.2f'),')']);
 xLimits = get(handles.AxesImage, 'xlim');
 yLimits = get(handles.AxesImage, 'ylim');
-if handles.moving ~= 0 && curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
-        && curX > 0.5 && curX < handles.imageWidth + 0.5 && curY > 0.5 && curY < handles.imageHeight + 0.5
-    handles.marks(handles.moving, :) = [curX, curY] + handles.movingOffset;
-    if all(ishandle(handles.markPlots(handles.moving, :)))
-        delete(handles.markPlots(handles.moving, :));
-        handles = plotMarks(handles, handles.moving);
-        SlotTable = get(handles.SlotTable,'data');
-        SlotTable(any(cellfun(@isempty, SlotTable),2),:) = [];
-        SlotTable(any(cellfun(@isnan, SlotTable),2),:) = [];
-        SlotTable = cell2mat(SlotTable);
-        if ~isempty(handles.markLines)
-            delete(handles.markLines(:));
-            handles.markLines(:) = [];
-        end
-        handles = drawSlots(handles, SlotTable, handles.marks);
+if curX > min(xLimits) && curX < max(xLimits) && curY > min(yLimits) && curY < max(yLimits)...
+        && curX > 0.5 && curX < handles.imageSize + 0.5 && curY > 0.5 && curY < handles.imageSize + 0.5
+    if handles.movingPoint
+        handles.pointList.SetPointPosition(curX + handles.pointMovingOffset(1), curY + handles.pointMovingOffset(2));
+        handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+    elseif handles.movingAxes
+        movingVector = handles.axesMovingStart - get(handles.ReferenceAxes, 'CurrentPoint');
+        set(handles.AxesImage, 'xlim', handles.originalXLimits + movingVector(1, 1), 'ylim', handles.originalYLimits + movingVector(1, 2));
     end
     guidata(hObject, handles);
 end
 
-
-function mouseReleased(hObject, ~)
+function hotkeyPressed( hObject, eventdata )
+%HOTKEYPRESSED Respond the keyboard press event
+%   Detailed explanation goes here
 handles = guidata(hObject);
 if ~handles.readSuccess
     return;
 end
-if strcmp(get(gcf,'selectionType'), 'normal') && handles.moving ~= 0
-    handles.moving = 0;
+if handles.manification == 1
+    step = 1;
+elseif handles.manification == 2
+    step = 0.3;
+elseif handles.manification == 3
+    step = 0.1;
+end
+if strcmp(get(gcf, 'CurrentCharacter'),'w') && ~handles.movingPoint
+    handles.pointList.ShiftPointPosition(0, -step);
+    handles.slotList.Replot(handles.pointList.points, handles.imageSize);
     guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'a') && ~handles.movingPoint
+    handles.pointList.ShiftPointPosition(-step, 0);
+    handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+    guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'s') && ~handles.movingPoint
+    handles.pointList.ShiftPointPosition(0, step);
+    handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+    guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'d') && ~handles.movingPoint
+    handles.pointList.ShiftPointPosition(step, 0);
+    handles.slotList.Replot(handles.pointList.points, handles.imageSize);
+    guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'f')
+    main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'q')
+    main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
+    main('LoadLastImage_Callback', hObject, eventdata, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'e')
+    main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
+    main('LoadNextImage_Callback', hObject, eventdata, handles);
+elseif double(get(gcf, 'CurrentCharacter'))==29
+    main('LoadNextImage_Callback', hObject, eventdata, handles);
+elseif double(get(gcf, 'CurrentCharacter'))==28
+    main('LoadLastImage_Callback', hObject, eventdata, handles);
 end
