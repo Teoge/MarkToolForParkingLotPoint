@@ -64,10 +64,7 @@ classdef SlotList < handle
         end
         
         function PlotSlots(this, points, imageSize)
-            VerticalSlotMin = imageSize * 0.20926270218009074;
-            VerticalSlotMax = imageSize * 0.33241545502218595;
-            HorizentalSlotMin = imageSize * 0.3878748166115165;
-            HorizentalSlotMax = imageSize * 0.6681434512325273;
+            MidianSlotLength = imageSize * 0.360145135816851225;
             ParallelSeparatorLength = imageSize * 0.20;
             PerpendicularSeparatorLength = imageSize * 0.53;
             for i = 1:size(this.slots, 1)
@@ -81,17 +78,13 @@ classdef SlotList < handle
                 y2 = points(this.slots(i,2)).y;
                 distance = sqrt((x1-x2)^2 + (y1-y2)^2);
 
-                if distance < VerticalSlotMin || distance > HorizentalSlotMax
-                    set(this.slotInfo, 'String', 'Invalid Slot in Table');
-                    return;
-                end
                 switch this.slots(i, 3)
                     case 1
                         if this.slots(i, 4) ~= 90
                             set(this.slotInfo, 'String', 'Invalid Slot in Table');
                             return;
                         end
-                        if distance < (VerticalSlotMax + HorizentalSlotMin) / 2
+                        if distance < MidianSlotLength
                             sideLength = PerpendicularSeparatorLength;
                         else
                             sideLength = ParallelSeparatorLength;

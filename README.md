@@ -45,6 +45,7 @@ The following images show three types of parking slot. For each image, the marki
 3. Press "W", "A", "S" and "D" keys on the keyboard to fine tune the position of the selected mark. The index of selected mark will be shown on the right of image. By default, none of the marks is selected, and the index should be zero. When you click on a mark or drag it, the mark will be selected. When you zone in, if selected mark is not within the zone in range then it will be deselect.
 4. Use"Q" and "E" on the keyboard to perform "Save" + "Previous" button function and "Save" + "Next" button function.
 5. Use "Turn to Page" function to fast index to certain page.
+6. Use "DELETE" button to delete current image and label. (Warning: the delete is permanent.)
 
 ##### JSON
 A simple function `mat2json.m` is provided in case you want to read the label file with other language.

@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 13-Jul-2019 10:34:50
+% Last Modified by GUIDE v2.5 26-Jul-2019 14:04:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -202,6 +202,35 @@ function SlotTable_CellEditCallback(hObject, ~, handles)
 handles.slotList.UpdateSlotsFromTable();
 handles.slotList.Replot(handles.pointList.points, handles.imageSize);
 guidata(hObject, handles);
+
+
+% --- Executes on button press in DeleteSample.
+function DeleteSample_Callback(hObject, ~, handles)
+% hObject    handle to DeleteSample (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~handles.readSuccess
+    set(handles.LoadResult, 'String', 'Select folder first!');
+    return;
+end
+name = [handles.imagePath, handles.images(handles.imageIndex).name];
+delete(name);
+if exist([name(1:end-3), 'mat'], 'file')
+    delete([name(1:end-3), 'mat']);
+end
+handles.images(handles.imageIndex) = [];
+if isempty(handles.images)
+    set(handles.ReadResult, 'String', '');
+    handles.readSuccess = 0;
+    set(handles.LoadResult, 'String', 'Select folder first!');
+    guidata(hObject, handles);
+    return
+end
+if handles.imageIndex > size(handles.images, 1)
+    handles.imageIndex = handles.imageIndex - 1;
+end
+set(handles.ReadResult, 'String', [num2str(size(handles.images, 1)), ' images read!']);
+loadImageAndMarks(hObject, handles);
 
 
 function loadImageAndMarks(hObject, handles)
