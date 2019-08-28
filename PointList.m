@@ -22,6 +22,7 @@ classdef PointList < handle
                 point.SetLabel(i);
             end
             this.showSelected = showSelected;
+            this.selectPoint(0);
         end
         
         function marks = ToVector(this)
