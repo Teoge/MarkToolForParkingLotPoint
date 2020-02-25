@@ -471,6 +471,8 @@ elseif strcmp(get(gcf, 'CurrentCharacter'),'d') && ~handles.movingPoint && ~hand
     handles.markingPointList.ShiftPointPosition(step, 0);
     handles.slotList.Replot(handles.markingPointList.markingPoints, handles.imageWidth);
     guidata(hObject, handles);
+elseif strcmp(get(gcf, 'CurrentCharacter'),'f')
+    main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
 elseif strcmp(get(gcf, 'CurrentCharacter'),'q')
     main('SaveMark_Callback', handles.SaveMark, eventdata, handles);
     main('LoadLastImage_Callback', hObject, eventdata, handles);
