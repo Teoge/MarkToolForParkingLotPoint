@@ -1,5 +1,4 @@
 function mat2json(inputdir, outputdir)
-    clear;
     dirs = dir([inputdir, '*.mat']);
     mkdir(outputdir);
     for i = 1:size(dirs)
